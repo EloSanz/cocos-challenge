@@ -2,6 +2,9 @@
 /dist
 /build
 
+# Challenge description
+challenge.md
+
 # Dependency directories
 node_modules/
 jspm_packages/
