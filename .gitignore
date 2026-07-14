@@ -9,6 +9,7 @@ challenge.md
 node_modules/
 jspm_packages/
 .agents/
+bruno/
 
 # Logs
 logs

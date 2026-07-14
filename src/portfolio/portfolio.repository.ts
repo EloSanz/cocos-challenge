@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Order } from '../database/entities/order.entity';
 import { MarketData } from '../database/entities/marketdata.entity';
 import { OrderStatus } from '../database/enums/order.enum';
+import { Retry } from '../common/decorators/retry.decorator';
 
 @Injectable()
 export class PortfolioRepository {
@@ -17,6 +18,7 @@ export class PortfolioRepository {
   /**
    * Fetches all FILLED orders for a given user including instrument details.
    */
+  @Retry({ maxAttempts: 3, delayMs: 1000 })
   async findFilledOrdersByUser(userId: number): Promise<Order[]> {
     return this.orderRepo.find({
       where: {
@@ -35,6 +37,7 @@ export class PortfolioRepository {
   /**
    * Fetches the latest market price for all instruments using TypeORM QueryBuilder with DISTINCT ON.
    */
+  @Retry({ maxAttempts: 3, delayMs: 1000 })
   async findLatestMarketData(): Promise<MarketData[]> {
     return this.marketDataRepo
       .createQueryBuilder('md')

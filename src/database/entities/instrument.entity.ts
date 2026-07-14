@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Order } from './order.entity';
-import { MarketData } from './marketdata.entity';
+import { Order } from '../entities/order.entity';
+import { MarketData } from '../entities/marketdata.entity';
 
 @Entity({ name: 'instruments' })
 export class Instrument {

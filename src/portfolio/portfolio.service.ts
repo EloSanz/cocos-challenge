@@ -29,11 +29,16 @@ export class PortfolioService {
 
     // If no orders at all, it could mean the user does not exist or has no activity
     if (orders.length === 0) {
-      throw new NotFoundException(`No portfolio data found for user ID ${userId}`);
+      throw new NotFoundException(
+        `No portfolio data found for user ID ${userId}`,
+      );
     }
 
     // 2. Map latest market prices by instrument ID
-    const marketMap = new Map<number, { close: number; previousClose: number }>();
+    const marketMap = new Map<
+      number,
+      { close: number; previousClose: number }
+    >();
     for (const row of marketRows) {
       marketMap.set(row.instrumentId, {
         close: parseFloat(row.close),
