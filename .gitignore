@@ -9,7 +9,10 @@ challenge.md
 node_modules/
 jspm_packages/
 .agents/
-bruno/
+
+# Local testing frontend (not part of the deliverable)
+frontend/
+.claude/
 
 # Logs
 logs

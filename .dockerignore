@@ -1,0 +1,18 @@
+node_modules/
+dist/
+npm-debug.log
+.git/
+.gitignore
+# Never copy env files (secrets) into the build context / image layers.
+.env
+.env.*
+.agents/
+.claude/
+bruno/
+frontend/
+monitoring/
+test/
+challenge.md
+README.md
+Dockerfile
+.dockerignore
