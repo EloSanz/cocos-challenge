@@ -39,6 +39,8 @@ interface DatabaseConfig {
             max: 10,
             connectionTimeoutMillis: 5000,
             idleTimeoutMillis: 30000,
+            // A hung query cannot hold a pool connection hostage indefinitely.
+            statement_timeout: 5000,
           },
         };
       },
