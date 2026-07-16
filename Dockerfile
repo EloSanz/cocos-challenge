@@ -22,6 +22,10 @@ FROM node:22-alpine AS runner
 
 WORKDIR /usr/src/app
 
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false
+ENV NPM_CONFIG_FUND=false
+ENV NPM_CONFIG_AUDIT=false
+
 COPY package*.json ./
 
 # Install only production dependencies
