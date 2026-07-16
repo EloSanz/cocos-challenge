@@ -1,0 +1,21 @@
+meta {
+  name: Send Order - Market Buy (amount)
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:3000/api/orders
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": 1,
+    "instrumentId": 47,
+    "type": "MARKET",
+    "side": "BUY",
+    "amount": 10000
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "info": {
+    "name": "Cocos Challenge",
+    "description": "API del challenge de Cocos: portfolio, búsqueda de instrumentos, envío y cancelación de órdenes, y health check. Base URL configurable en la variable `baseUrl`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get User Portfolio",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/portfolio/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["portfolio", "1"]
+        },
+        "description": "Valor total de cuenta, pesos disponibles y posiciones del usuario."
+      }
+    },
+    {
+      "name": "Send Order - Market Buy (size)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 47,\n  \"type\": \"MARKET\",\n  \"side\": \"BUY\",\n  \"size\": 10\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders"]
+        },
+        "description": "Compra MARKET por cantidad exacta de acciones. Ejecuta al último precio de cierre (FILLED)."
+      }
+    },
+    {
+      "name": "Send Order - Market Buy (amount)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 47,\n  \"type\": \"MARKET\",\n  \"side\": \"BUY\",\n  \"amount\": 10000\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders"]
+        },
+        "description": "Compra MARKET por monto en pesos. El servicio calcula la cantidad máxima de acciones enteras."
+      }
+    },
+    {
+      "name": "Send Order - Limit Sell",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 47,\n  \"type\": \"LIMIT\",\n  \"side\": \"SELL\",\n  \"size\": 5,\n  \"price\": 950\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders"]
+        },
+        "description": "Orden LIMIT: queda en estado NEW (pendiente en el book) y es cancelable."
+      }
+    },
+    {
+      "name": "Send Order - Rejected (insufficient funds)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 47,\n  \"type\": \"MARKET\",\n  \"side\": \"BUY\",\n  \"amount\": 999999999\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders"]
+        },
+        "description": "Monto mayor al cash disponible: la orden se persiste con estado REJECTED."
+      }
+    },
+    {
+      "name": "Search Instruments",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/instruments?q=PAMP&limit=20&offset=0",
+          "host": ["{{baseUrl}}"],
+          "path": ["instruments"],
+          "query": [
+            { "key": "q", "value": "PAMP" },
+            { "key": "limit", "value": "20" },
+            { "key": "offset", "value": "0" }
+          ]
+        },
+        "description": "Busca instrumentos por ticker o nombre (mín. 2 caracteres). Excluye la MONEDA. Respuesta con envelope { data, meta }."
+      }
+    },
+    {
+      "name": "Cancel Order",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/orders/16/cancel",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders", "16", "cancel"]
+        },
+        "description": "Cancela una orden en estado NEW. Reemplazá 16 por el id de una orden NEW (ej. la creada por 'Send Order - Limit Sell')."
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Liveness/readiness probe: verifica la conexión a la base de datos (@nestjs/terminus)."
+      }
+    }
+  ]
+}

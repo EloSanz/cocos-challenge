@@ -1,0 +1,16 @@
+meta {
+  name: Cancel Order
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:3000/api/orders/16/cancel
+  body: none
+  auth: none
+}
+
+docs {
+  Only orders with status NEW can be cancelled. Replace 16 with the id of a
+  NEW order in your database (e.g. create one first via "Send Order - Limit Sell").
+}

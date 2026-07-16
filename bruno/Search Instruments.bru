@@ -1,0 +1,17 @@
+meta {
+  name: Search Instruments
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:3000/api/instruments?q=PAMP&limit=20&offset=0
+  body: none
+  auth: none
+}
+
+params:query {
+  q: PAMP
+  limit: 20
+  offset: 0
+}
