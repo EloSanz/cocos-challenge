@@ -11,7 +11,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  *
  * NOTE: Esta migración está preparada para el futuro. Actualmente, las
  * entidades en el código NO tienen estas columnas definidas para no romper
- * la compatibilidad. Cuando decidas aplicar esta migración a la DB, 
+ * la compatibilidad. Cuando decidas aplicar esta migración a la DB,
  * recuerda agregar @CreateDateColumn y @UpdateDateColumn a las entidades.
  */
 export class AddAuditColumns1784219171015 implements MigrationInterface {

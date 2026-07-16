@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { User } from './entities/user.entity';
 import { Instrument } from './entities/instrument.entity';
@@ -18,7 +18,19 @@ interface DatabaseConfig {
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      useFactory: (configService: ConfigService) => {
+      useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
+        const isTest = process.env.NODE_ENV === 'test';
+
+        if (isTest) {
+          return {
+            type: 'better-sqlite3',
+            database: ':memory:',
+            entities: [User, Instrument, Order, MarketData],
+            synchronize: true,
+            dropSchema: true,
+          };
+        }
+
         const dbConfig = configService.get<DatabaseConfig>('database');
         if (!dbConfig) {
           throw new Error('Database configuration is missing');

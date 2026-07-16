@@ -9,6 +9,9 @@ import { User } from './user.entity';
 import { Instrument } from './instrument.entity';
 import { OrderSide, OrderStatus } from '../enums/order.enum';
 
+import { bigDecimalTransformer } from '../transformers/big-decimal.transformer';
+import Big from 'big.js';
+
 @Entity({ name: 'orders' })
 export class Order {
   @PrimaryGeneratedColumn()
@@ -20,22 +23,27 @@ export class Order {
   @Column({ name: 'userid' })
   userId: number;
 
-  @Column({ type: 'numeric', precision: 15, scale: 2 })
-  size: string; // Size can be stored as decimal/numeric. In NestJS/TypeORM, numeric is usually string.
+  @Column({ type: 'int' })
+  size: number;
 
-  @Column({ type: 'numeric', precision: 15, scale: 2 })
-  price: string;
+  @Column({
+    type: 'numeric',
+    precision: 15,
+    scale: 2,
+    transformer: bigDecimalTransformer,
+  })
+  price: Big;
 
   @Column()
   type: string; // MARKET, LIMIT
 
-  @Column({ type: 'enum', enum: OrderSide })
+  @Column({ type: 'varchar' })
   side: OrderSide;
 
-  @Column({ type: 'enum', enum: OrderStatus })
+  @Column({ type: 'varchar' })
   status: OrderStatus;
 
-  @Column({ type: 'timestamp' })
+  @Column()
   datetime: Date;
 
   @ManyToOne(() => User, (user) => user.orders)

@@ -7,6 +7,9 @@ import {
 } from 'typeorm';
 import { Instrument } from './instrument.entity';
 
+import { bigDecimalTransformer } from '../transformers/big-decimal.transformer';
+import Big from 'big.js';
+
 @Entity({ name: 'marketdata' })
 export class MarketData {
   @PrimaryGeneratedColumn()
@@ -15,22 +18,51 @@ export class MarketData {
   @Column({ name: 'instrumentid' })
   instrumentId: number;
 
-  @Column({ type: 'numeric', precision: 15, scale: 2, nullable: true })
-  high: string;
+  @Column({
+    type: 'numeric',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+    transformer: bigDecimalTransformer,
+  })
+  high: Big;
 
-  @Column({ type: 'numeric', precision: 15, scale: 2, nullable: true })
-  low: string;
+  @Column({
+    type: 'numeric',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+    transformer: bigDecimalTransformer,
+  })
+  low: Big;
 
-  @Column({ type: 'numeric', precision: 15, scale: 2, nullable: true })
-  open: string;
+  @Column({
+    type: 'numeric',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+    transformer: bigDecimalTransformer,
+  })
+  open: Big;
 
-  @Column({ type: 'numeric', precision: 15, scale: 2 })
-  close: string;
+  @Column({
+    type: 'numeric',
+    precision: 15,
+    scale: 2,
+    transformer: bigDecimalTransformer,
+  })
+  close: Big;
 
-  @Column({ name: 'previousclose', type: 'numeric', precision: 15, scale: 2 })
-  previousClose: string;
+  @Column({
+    name: 'previousclose',
+    type: 'numeric',
+    precision: 15,
+    scale: 2,
+    transformer: bigDecimalTransformer,
+  })
+  previousClose: Big;
 
-  @Column({ type: 'timestamp' })
+  @Column()
   date: Date;
 
   @ManyToOne(() => Instrument, (instrument) => instrument.marketData)

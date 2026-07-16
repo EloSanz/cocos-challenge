@@ -8,7 +8,7 @@ import { DataSource } from 'typeorm';
 import { seedTestData, API_PATHS } from './utils/seed.util';
 import { setupTestApp } from './utils/app.util';
 
-describe('PortfolioController (e2e)', () => {
+describe('InstrumentsController (e2e)', () => {
   let app: INestApplication<App>;
   let dataSource: DataSource;
 
@@ -29,29 +29,24 @@ describe('PortfolioController (e2e)', () => {
     await app.close();
   });
 
-  it(`${API_PATHS.PORTFOLIO}/:userId (GET) - success for seeded user`, () => {
+  it(`${API_PATHS.INSTRUMENTS} (GET) - search by ticker`, () => {
     return request(app.getHttpServer())
-      .get(`${API_PATHS.PORTFOLIO}/1`)
+      .get(`${API_PATHS.INSTRUMENTS}?q=GGAL`)
       .expect(200)
       .expect((res) => {
         const body = res.body as Record<string, any>;
-        expect(body).toHaveProperty('totalAccountValue');
-        expect(body).toHaveProperty('availableCash');
-        expect(body).toHaveProperty('positions');
-        expect(Array.isArray(body.positions)).toBeTruthy();
+        expect(body).toHaveProperty('data');
+        expect(body).toHaveProperty('meta');
+
+        const data = body.data as Array<Record<string, unknown>>;
+        expect(Array.isArray(data)).toBeTruthy();
+        expect(data.length).toBeGreaterThan(0);
+        expect(data[0]).toHaveProperty('id');
+        expect(data[0].ticker).toBe('GGAL');
       });
   });
 
-  it(`${API_PATHS.PORTFOLIO}/:userId (GET) - 404 for user with no activity`, () => {
-    // User 2 has no orders in the db.sql seed data
-    return request(app.getHttpServer())
-      .get(`${API_PATHS.PORTFOLIO}/2`)
-      .expect(404);
-  });
-
-  it(`${API_PATHS.PORTFOLIO}/:userId (GET) - validation error for non-numeric id`, () => {
-    return request(app.getHttpServer())
-      .get(`${API_PATHS.PORTFOLIO}/invalid`)
-      .expect(400);
+  it(`${API_PATHS.INSTRUMENTS} (GET) - missing query`, () => {
+    return request(app.getHttpServer()).get(API_PATHS.INSTRUMENTS).expect(400);
   });
 });
