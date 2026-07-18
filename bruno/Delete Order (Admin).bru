@@ -1,0 +1,15 @@
+meta {
+  name: Delete Order (Admin)
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/admin/orders/1
+  body: none
+  auth: none
+}
+
+headers {
+  x-api-key: supersecret123
+}

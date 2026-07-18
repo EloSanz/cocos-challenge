@@ -140,6 +140,21 @@
         },
         "description": "Liveness/readiness probe: verifica la conexión a la base de datos (@nestjs/terminus)."
       }
+    },
+    {
+      "name": "Delete Order (Admin)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "x-api-key", "value": "supersecret123" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/admin/orders/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "orders", "1"]
+        },
+        "description": "Endpoint administrativo para borrar físicamente una orden saltando reglas de negocio. Requiere x-api-key."
+      }
     }
   ]
 }
