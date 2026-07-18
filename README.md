@@ -1,99 +1,81 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Cocos Challenge API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+[![CI](https://github.com/EloSanz/cocos-challenge/actions/workflows/ci.yml/badge.svg)](https://github.com/EloSanz/cocos-challenge/actions/workflows/ci.yml)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+API RESTful desarrollada para el desafío de Cocos, encargada de la gestión de instrumentos financieros, órdenes de mercado y visualización de portafolios.
 
-## Description
+## Tecnologías Usadas
+- **NestJS**: Framework principal de Node.js.
+- **TypeScript**: Lenguaje fuertemente tipado.
+- **PostgreSQL**: Base de datos relacional.
+- **TypeORM**: ORM para interactuar con la base de datos y manejar migraciones.
+- **Docker & Docker Compose**: Contenedorización de la aplicación y servicios anexos.
+- **Jest & Cucumber**: Herramientas para Unit Testing, E2E y Behavior-Driven Development (Tests de regresión).
+- **Swagger**: Documentación automática OpenAPI.
+- **Grafana + Loki + Promtail**: Stack completo de observabilidad y recolección de logs HTTP.
+- **Bruno / Postman**: Colecciones de requests (`/bruno`, `/postman`) para probar la API localmente.
+- **GitHub Actions**: CI que corre lint, build, unit tests (con umbral de cobertura) y e2e en cada push/PR.
+- **API Versioning**: URI versioning (`app.enableVersioning`) — todos los endpoints viven bajo `/api/v1/...`, excepto `/api/health` (version-neutral, es infraestructura).
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Estructura del Proyecto
+El proyecto está diseñado siguiendo principios de Arquitectura Limpia (Clean Architecture / Hexagonal), agrupado por módulos de funcionalidad (Package by Feature):
 
-## Project setup
+- `src/instruments`: Maneja la búsqueda de instrumentos. Incorpora **Caché en Memoria** para optimizar consultas recurrentes.
+- `src/orders`: Contiene la lógica de negocio, validación y persistencia para enviar y cancelar órdenes (Market y Limit).
+- `src/portfolio`: Lógica de lectura de cuentas, cálculo de rendimientos y activos.
+- `src/admin`: Capa administrativa protegida por `x-api-key`.
+- `src/database`: Configuración top-level de persistencia, entidades globales y scripts de migración.
+- `src/common`: Excepciones de dominio, filtros globales de error y middlewares (ej. Logging).
 
+## Puertos y Servicios
+Al levantar el entorno mediante Docker Compose, los siguientes servicios quedan expuestos en tu máquina local:
+
+- **API NestJS**: [http://localhost:3000](http://localhost:3000)
+- **Documentación Swagger**: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
+- **Panel de Grafana (Logs)**: [http://localhost:3001](http://localhost:3001)
+- **Base de Datos PostgreSQL**: `localhost:5432`
+
+## Endpoints
+
+La fuente de verdad es **Swagger** (`/api/docs`, siempre sincronizado con el código) — esta tabla es solo un mapa rápido. Para probar requests reales, importá la colección de **Postman** (`/postman`) o **Bruno** (`/bruno`).
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/api/v1/instruments?q=` | Busca instrumentos por ticker o nombre (cacheado en memoria). |
+| `GET` | `/api/v1/portfolio/:userId` | Saldo disponible, tenencias y rendimiento del usuario. |
+| `POST` | `/api/v1/orders` | Envía una orden MARKET o LIMIT (compra/venta). |
+| `POST` | `/api/v1/orders/:id/cancel` | Cancela una orden propia, solo si está en estado `NEW`. |
+| `GET` | `/api/health` | Liveness/readiness probe (chequea la conexión a la DB). **Sin versionar**: es infra, no contrato de API. |
+| `DELETE` | `/api/v1/admin/{orders\|users\|instruments\|marketdata}/:id` | Borrado físico. Requiere header `x-api-key`; deshabilitado por completo fuera de `NODE_ENV=development`. |
+
+Smoke test rápido una vez levantado el stack:
 ```bash
-$ npm install
+curl http://localhost:3000/api/health
 ```
 
-## Compile and run the project
+## Setup y Tests
+
+Para ejecutar el proyecto localmente, solo necesitas tener Docker y Node instalados.
 
 ```bash
-# development
-$ npm run start
+# 1. Instalar dependencias locales (útil para el autocompletado y tests)
+npm install
 
-# watch mode
-$ npm run start:dev
+# 2. Levantar la infraestructura completa (App, BD, Logs)
+# NOTA: Por defecto, Docker Compose arranca en modo "production", lo que deshabilita
+# los endpoints de /admin por seguridad. Si necesitas probar las rutas de administrador
+# localmente, debes forzar explícitamente el entorno de desarrollo:
+# NODE_ENV=development docker-compose up -d --build
+docker-compose up -d --build
 
-# production mode
-$ npm run start:prod
+# 3. Correr la suite de Unit Tests (con umbral de cobertura sobre la lógica de dominio)
+npm run test:cov
+
+# 4. Correr la suite de Tests End-to-End (Validación de integraciones, SQLite en memoria)
+npm run test:e2e
+
+# 5. Correr la suite de Regresión (BDD con Cucumber, requiere la API levantada)
+npm run test:regression
 ```
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# cocos-challenge
+CI (`.github/workflows/ci.yml`) reproduce los pasos 3 y 4 más lint y build en cada push/PR a `main`.
