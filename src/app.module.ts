@@ -32,7 +32,22 @@ import { ENVIRONMENTS } from './common/constants/env.constants';
         genReqId: (req) => {
           return req.headers['x-request-id'] || randomUUID();
         },
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+        serializers: {
+          req: (req: any) => ({
+            id: req.id,
+            method: req.method,
+            url: req.url,
+          }),
+          res: (res: any) => ({
+            statusCode: res.statusCode,
+          }),
+        },
+        /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
       },
+      forRoutes: ['{*path}'],
     }),
     ThrottlerModule.forRoot([
       {
