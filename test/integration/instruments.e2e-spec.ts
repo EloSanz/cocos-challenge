@@ -8,6 +8,8 @@ import { DataSource } from 'typeorm';
 import { seedTestData, API_PATHS } from './utils/seed.util';
 import { setupTestApp } from './utils/app.util';
 
+import { ISearchInstrumentsUseCaseToken } from '../../src/instruments/interfaces/search-instruments-usecase.interface';
+
 describe('InstrumentsController (e2e)', () => {
   let app: INestApplication<App>;
   let dataSource: DataSource;
@@ -48,5 +50,27 @@ describe('InstrumentsController (e2e)', () => {
 
   it(`${API_PATHS.INSTRUMENTS} (GET) - missing query`, () => {
     return request(app.getHttpServer()).get(API_PATHS.INSTRUMENTS).expect(400);
+  });
+
+  it(`${API_PATHS.INSTRUMENTS} (GET) - cache works for repeated requests`, async () => {
+    // 1. Get the usecase to spy on it
+    const useCase = app.get(ISearchInstrumentsUseCaseToken);
+    const spy = jest.spyOn(useCase, 'execute');
+
+    // 2. First request: Should hit the usecase and cache the result
+    await request(app.getHttpServer())
+      .get(`${API_PATHS.INSTRUMENTS}?q=CACHED_TICKER`)
+      .expect(200);
+
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    // 3. Second request: Should return from cache, so usecase is NOT hit again
+    await request(app.getHttpServer())
+      .get(`${API_PATHS.INSTRUMENTS}?q=CACHED_TICKER`)
+      .expect(200);
+
+    expect(spy).toHaveBeenCalledTimes(1); // Still 1!
+
+    spy.mockRestore();
   });
 });

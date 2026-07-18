@@ -1,4 +1,5 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { Controller, Get, Inject, Query, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 import { ApiTags } from '@nestjs/swagger';
 import { SearchInstrumentsDto } from './dto/search-instruments.dto';
 import { SearchInstrumentsResponseDto } from './dto/search-instruments-response.dto';
@@ -16,6 +17,7 @@ export class InstrumentsController {
   ) {}
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   @ApiSearchInstruments()
   async search(
     @Query() dto: SearchInstrumentsDto,
