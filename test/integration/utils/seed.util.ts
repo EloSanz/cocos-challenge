@@ -11,9 +11,9 @@ import {
 import Big from 'big.js';
 
 export const API_PATHS = {
-  INSTRUMENTS: '/api/instruments',
-  PORTFOLIO: '/api/portfolio',
-  ORDERS: '/api/orders',
+  INSTRUMENTS: '/api/v1/instruments',
+  PORTFOLIO: '/api/v1/portfolio',
+  ORDERS: '/api/v1/orders',
 };
 
 export async function seedTestData(dataSource: DataSource) {

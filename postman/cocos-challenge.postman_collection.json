@@ -18,9 +18,15 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/portfolio/1",
-          "host": ["{{baseUrl}}"],
-          "path": ["portfolio", "1"]
+          "raw": "{{baseUrl}}/v1/portfolio/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "portfolio",
+            "1"
+          ]
         },
         "description": "Valor total de cuenta, pesos disponibles y posiciones del usuario."
       }
@@ -29,16 +35,30 @@
       "name": "Send Order - Market Buy (size)",
       "request": {
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 47,\n  \"type\": \"MARKET\",\n  \"side\": \"BUY\",\n  \"size\": 10\n}",
-          "options": { "raw": { "language": "json" } }
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
-          "raw": "{{baseUrl}}/orders",
-          "host": ["{{baseUrl}}"],
-          "path": ["orders"]
+          "raw": "{{baseUrl}}/v1/orders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "orders"
+          ]
         },
         "description": "Compra MARKET por cantidad exacta de acciones. Ejecuta al último precio de cierre (FILLED)."
       }
@@ -47,16 +67,30 @@
       "name": "Send Order - Market Buy (amount)",
       "request": {
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 47,\n  \"type\": \"MARKET\",\n  \"side\": \"BUY\",\n  \"amount\": 10000\n}",
-          "options": { "raw": { "language": "json" } }
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
-          "raw": "{{baseUrl}}/orders",
-          "host": ["{{baseUrl}}"],
-          "path": ["orders"]
+          "raw": "{{baseUrl}}/v1/orders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "orders"
+          ]
         },
         "description": "Compra MARKET por monto en pesos. El servicio calcula la cantidad máxima de acciones enteras."
       }
@@ -65,16 +99,30 @@
       "name": "Send Order - Limit Sell",
       "request": {
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 47,\n  \"type\": \"LIMIT\",\n  \"side\": \"SELL\",\n  \"size\": 5,\n  \"price\": 950\n}",
-          "options": { "raw": { "language": "json" } }
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
-          "raw": "{{baseUrl}}/orders",
-          "host": ["{{baseUrl}}"],
-          "path": ["orders"]
+          "raw": "{{baseUrl}}/v1/orders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "orders"
+          ]
         },
         "description": "Orden LIMIT: queda en estado NEW (pendiente en el book) y es cancelable."
       }
@@ -83,16 +131,30 @@
       "name": "Send Order - Rejected (insufficient funds)",
       "request": {
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"userId\": 1,\n  \"instrumentId\": 47,\n  \"type\": \"MARKET\",\n  \"side\": \"BUY\",\n  \"amount\": 999999999\n}",
-          "options": { "raw": { "language": "json" } }
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
-          "raw": "{{baseUrl}}/orders",
-          "host": ["{{baseUrl}}"],
-          "path": ["orders"]
+          "raw": "{{baseUrl}}/v1/orders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "orders"
+          ]
         },
         "description": "Monto mayor al cash disponible: la orden se persiste con estado REJECTED."
       }
@@ -103,13 +165,27 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/instruments?q=PAMP&limit=20&offset=0",
-          "host": ["{{baseUrl}}"],
-          "path": ["instruments"],
+          "raw": "{{baseUrl}}/v1/instruments?q=PAMP&limit=20&offset=0",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "instruments"
+          ],
           "query": [
-            { "key": "q", "value": "PAMP" },
-            { "key": "limit", "value": "20" },
-            { "key": "offset", "value": "0" }
+            {
+              "key": "q",
+              "value": "PAMP"
+            },
+            {
+              "key": "limit",
+              "value": "20"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
           ]
         },
         "description": "Busca instrumentos por ticker o nombre (mín. 2 caracteres). Excluye la MONEDA. Respuesta con envelope { data, meta }."
@@ -121,9 +197,16 @@
         "method": "POST",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/orders/16/cancel",
-          "host": ["{{baseUrl}}"],
-          "path": ["orders", "16", "cancel"]
+          "raw": "{{baseUrl}}/v1/orders/16/cancel",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "orders",
+            "16",
+            "cancel"
+          ]
         },
         "description": "Cancela una orden en estado NEW. Reemplazá 16 por el id de una orden NEW (ej. la creada por 'Send Order - Limit Sell')."
       }
@@ -135,8 +218,12 @@
         "header": [],
         "url": {
           "raw": "{{baseUrl}}/health",
-          "host": ["{{baseUrl}}"],
-          "path": ["health"]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
         },
         "description": "Liveness/readiness probe: verifica la conexión a la base de datos (@nestjs/terminus)."
       }
@@ -146,12 +233,22 @@
       "request": {
         "method": "DELETE",
         "header": [
-          { "key": "x-api-key", "value": "supersecret123" }
+          {
+            "key": "x-api-key",
+            "value": "supersecret123"
+          }
         ],
         "url": {
-          "raw": "{{baseUrl}}/admin/orders/1",
-          "host": ["{{baseUrl}}"],
-          "path": ["admin", "orders", "1"]
+          "raw": "{{baseUrl}}/v1/admin/orders/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "v1",
+            "admin",
+            "orders",
+            "1"
+          ]
         },
         "description": "Endpoint administrativo para borrar físicamente una orden saltando reglas de negocio. Requiere x-api-key."
       }

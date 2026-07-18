@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, VERSION_NEUTRAL } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   HealthCheck,
@@ -7,8 +7,10 @@ import {
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
 
+// Health checks are infrastructure, not API contract: orchestrators/load
+// balancers poll this path and shouldn't have to track API version bumps.
 @ApiTags('health')
-@Controller('health')
+@Controller({ path: 'health', version: VERSION_NEUTRAL })
 export class HealthController {
   constructor(
     private readonly health: HealthCheckService,

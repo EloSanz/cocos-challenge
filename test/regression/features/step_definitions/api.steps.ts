@@ -8,6 +8,10 @@ let response: any = null;
 let lastInstrumentId: number | null = null;
 let createdOrderIds: number[] = [];
 
+// Versioned API routes live under /v1 (see app.enableVersioning in main.ts);
+// /health is intentionally VERSION_NEUTRAL and stays outside /v1.
+const v1 = (path: string) => `${baseUrl}/v1${path}`;
+
 Given('the API is running at {string}', async function (url: string) {
   baseUrl = url;
   try {
@@ -34,7 +38,7 @@ Given('the API is running at {string}', async function (url: string) {
 
 When('I search for {string}', async function (ticker: string) {
   try {
-    const res = await axios.get(`${baseUrl}/instruments?q=${ticker}`);
+    const res = await axios.get(v1(`/instruments?q=${ticker}`));
     response = res.data;
   } catch (error: any) {
     response = error.response;
@@ -61,7 +65,7 @@ Then(
 
 When('I request the portfolio for user {int}', async function (userId: number) {
   try {
-    const res = await axios.get(`${baseUrl}/portfolio/${userId}`);
+    const res = await axios.get(v1(`/portfolio/${userId}`));
     response = res.data;
   } catch (error: any) {
     response = error.response;
@@ -84,7 +88,7 @@ When(
     let instrumentId = lastInstrumentId;
 
     if (!instrumentId) {
-      const res = await axios.get(`${baseUrl}/instruments?q=${ticker}`);
+      const res = await axios.get(v1(`/instruments?q=${ticker}`));
       instrumentId = res.data.data[0].id;
     }
 
@@ -98,7 +102,7 @@ When(
     };
 
     try {
-      const res = await axios.post(`${baseUrl}/orders`, payload);
+      const res = await axios.post(v1('/orders'), payload);
       response = res.data;
     } catch (error: any) {
       response = error.response;
@@ -128,7 +132,7 @@ After(async function () {
   const secretKey = process.env.ADMIN_SECRET_KEY || 'supersecret123';
   for (const id of createdOrderIds) {
     try {
-      await axios.delete(`${baseUrl}/admin/orders/${id}`, {
+      await axios.delete(v1(`/admin/orders/${id}`), {
         headers: { 'x-api-key': secretKey },
       });
     } catch (e) {

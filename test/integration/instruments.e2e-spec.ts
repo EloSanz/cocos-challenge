@@ -8,7 +8,10 @@ import { DataSource } from 'typeorm';
 import { seedTestData, API_PATHS } from './utils/seed.util';
 import { setupTestApp } from './utils/app.util';
 
-import { ISearchInstrumentsUseCaseToken } from '../../src/instruments/interfaces/search-instruments-usecase.interface';
+import {
+  ISearchInstrumentsUseCaseToken,
+  ISearchInstrumentsUseCase,
+} from '../../src/instruments/interfaces/search-instruments-usecase.interface';
 
 describe('InstrumentsController (e2e)', () => {
   let app: INestApplication<App>;
@@ -54,7 +57,9 @@ describe('InstrumentsController (e2e)', () => {
 
   it(`${API_PATHS.INSTRUMENTS} (GET) - cache works for repeated requests`, async () => {
     // 1. Get the usecase to spy on it
-    const useCase = app.get(ISearchInstrumentsUseCaseToken);
+    const useCase = app.get<ISearchInstrumentsUseCase>(
+      ISearchInstrumentsUseCaseToken,
+    );
     const spy = jest.spyOn(useCase, 'execute');
 
     // 2. First request: Should hit the usecase and cache the result

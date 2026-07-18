@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
@@ -10,6 +10,12 @@ async function bootstrap() {
   app.enableShutdownHooks();
   app.enableCors();
   app.setGlobalPrefix('api');
+  // URI versioning: /api/v1/orders, /api/v1/portfolio/:userId, etc.
+  // Unversioned routes (health) opt out via `@Controller({ version: VERSION_NEUTRAL })`.
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

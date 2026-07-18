@@ -1,4 +1,10 @@
-import { Controller, Get, Inject, Query, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Inject,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { ApiTags } from '@nestjs/swagger';
 import { SearchInstrumentsDto } from './dto/search-instruments.dto';

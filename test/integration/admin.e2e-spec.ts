@@ -9,7 +9,7 @@ import { Order } from '../../src/database/entities/order.entity';
 import { seedTestData } from './utils/seed.util';
 import { setupTestApp } from './utils/app.util';
 
-const ADMIN_PATH = '/api/admin';
+const ADMIN_PATH = '/api/v1/admin';
 const TEST_SECRET = 'supersecret123';
 
 describe('AdminController (e2e)', () => {

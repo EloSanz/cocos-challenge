@@ -20,7 +20,7 @@ describe('DomainExceptionFilter', () => {
     host = {
       switchToHttp: () => ({
         getResponse: () => ({ status: statusMock }),
-        getRequest: () => ({ originalUrl: '/api/orders/16/cancel' }),
+        getRequest: () => ({ originalUrl: '/api/v1/orders/16/cancel' }),
       }),
     } as unknown as ArgumentsHost;
   });
@@ -39,7 +39,7 @@ describe('DomainExceptionFilter', () => {
       statusCode: 404,
       error: 'Not Found',
       message: 'Order with ID 16 not found',
-      path: '/api/orders/16/cancel',
+      path: '/api/v1/orders/16/cancel',
     });
     expect(typeof body.timestamp).toBe('string');
   });
