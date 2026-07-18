@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
+import { AppModule } from '../../src/app.module';
 
 import { DataSource } from 'typeorm';
 import { seedTestData, API_PATHS } from './utils/seed.util';
@@ -30,15 +30,25 @@ describe('PortfolioController (e2e)', () => {
   });
 
   it(`${API_PATHS.PORTFOLIO}/:userId (GET) - success for seeded user`, () => {
+    // Seed: CASH_IN 10000, BUY 10 AAPL @ 150 -> cash 8500.
+    // AAPL latest close is 200 (NOT the stale 100 row): value 2000,
+    // return (2000 - 1500) / 1500 = 33.33%.
     return request(app.getHttpServer())
       .get(`${API_PATHS.PORTFOLIO}/1`)
       .expect(200)
       .expect((res) => {
         const body = res.body as Record<string, any>;
-        expect(body).toHaveProperty('totalAccountValue');
-        expect(body).toHaveProperty('availableCash');
-        expect(body).toHaveProperty('positions');
-        expect(Array.isArray(body.positions)).toBeTruthy();
+        expect(body.availableCash).toBe(8500);
+        expect(body.totalAccountValue).toBe(10500);
+        expect(body.positions).toEqual([
+          {
+            ticker: 'AAPL',
+            name: 'Apple Inc',
+            shares: 10,
+            totalValue: 2000,
+            totalReturnPct: 33.33,
+          },
+        ]);
       });
   });
 

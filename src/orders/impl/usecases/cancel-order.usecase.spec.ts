@@ -87,4 +87,13 @@ describe('CancelOrderUseCaseImpl', () => {
 
     await expect(useCase.execute(16)).rejects.toThrow(BusinessRuleException);
   });
+
+  it('reports UNKNOWN when the racing order vanished before the re-read', async () => {
+    repo.findOrderById
+      .mockResolvedValueOnce(existingOrder(OrderStatus.NEW))
+      .mockResolvedValueOnce(null);
+    repo.cancelOrderIfNew.mockResolvedValue(false);
+
+    await expect(useCase.execute(16)).rejects.toThrow(/UNKNOWN/);
+  });
 });

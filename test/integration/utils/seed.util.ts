@@ -1,13 +1,13 @@
 import { DataSource } from 'typeorm';
-import { Instrument } from '../../src/database/entities/instrument.entity';
-import { User } from '../../src/database/entities/user.entity';
-import { Order } from '../../src/database/entities/order.entity';
-import { MarketData } from '../../src/database/entities/marketdata.entity';
+import { Instrument } from '../../../src/database/entities/instrument.entity';
+import { User } from '../../../src/database/entities/user.entity';
+import { Order } from '../../../src/database/entities/order.entity';
+import { MarketData } from '../../../src/database/entities/marketdata.entity';
 import {
   OrderSide,
   OrderStatus,
   OrderType,
-} from '../../src/database/enums/order.enum';
+} from '../../../src/database/enums/order.enum';
 import Big from 'big.js';
 
 export const API_PATHS = {
@@ -41,17 +41,26 @@ export async function seedTestData(dataSource: DataSource) {
     { id: 4, ticker: 'YPFD', name: 'YPF', type: 'ACCIONES' },
   ]);
 
-  // MarketData
+  // MarketData. AAPL has TWO dates on purpose: the portfolio and MARKET
+  // execution must pick the latest close (200), never the stale one (100).
+  // This guards the latest-price query against regressions (e.g. DISTINCT ON
+  // being silently ignored on SQLite).
   await marketDataRepo.save([
     {
       instrumentId: 2,
-      date: new Date(),
+      date: new Date('2023-07-13'),
+      close: new Big(100),
+      previousClose: new Big(95),
+    },
+    {
+      instrumentId: 2,
+      date: new Date('2023-07-14'),
       close: new Big(200),
       previousClose: new Big(190),
     },
     {
       instrumentId: 3,
-      date: new Date(),
+      date: new Date('2023-07-14'),
       close: new Big(150),
       previousClose: new Big(145),
     },

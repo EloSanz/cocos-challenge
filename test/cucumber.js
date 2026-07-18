@@ -1,8 +1,8 @@
 module.exports = {
   default: {
     requireModule: ['ts-node/register'],
-    require: ['test/features/step_definitions/**/*.ts'],
+    require: ['test/regression/features/step_definitions/**/*.ts'],
     format: ['progress'],
-    paths: ['test/features/**/*.feature']
+    paths: ['test/regression/features/**/*.feature']
   }
 }

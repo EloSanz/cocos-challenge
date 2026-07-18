@@ -1,30 +1,33 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
-import { Given, When, Then } from '@cucumber/cucumber';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+import { Given, When, Then, After } from '@cucumber/cucumber';
 import axios from 'axios';
 import * as assert from 'assert';
 
 let baseUrl = '';
 let response: any = null;
 let lastInstrumentId: number | null = null;
+let createdOrderIds: number[] = [];
 
 Given('the API is running at {string}', async function (url: string) {
   baseUrl = url;
   try {
     const res = await axios.get(`${baseUrl}/health`, { timeout: 2000 });
     if (res.status !== 200 || res.data?.status !== 'ok') {
-      throw new Error(`Health check failed. The DB or API might be down. Status: ${res.status}`);
+      throw new Error(
+        `Health check failed. The DB or API might be down. Status: ${res.status}`,
+      );
     }
   } catch (error: any) {
     throw new Error(
       `\n\n======================================================\n` +
-      ` FATAL ERROR: API IS NOT RESPONDING\n` +
-      `======================================================\n` +
-      `Cannot connect to the API at ${baseUrl}.\n` +
-      `Make sure the server and database are running before executing blackbox tests:\n` +
-      `  1. docker-compose up -d db\n` +
-      `  2. npm run start:dev\n\n` +
-      `Original Error: ${error.message || error.code || String(error)}\n` +
-      `======================================================\n\n`
+        ` FATAL ERROR: API IS NOT RESPONDING\n` +
+        `======================================================\n` +
+        `Cannot connect to the API at ${baseUrl}.\n` +
+        `Make sure the server and database are running before executing blackbox tests:\n` +
+        `  1. docker-compose up -d db\n` +
+        `  2. npm run start:dev\n\n` +
+        `Original Error: ${error.message || error.code || String(error)}\n` +
+        `======================================================\n\n`,
     );
   }
 });
@@ -106,6 +109,7 @@ When(
 Then('the order should be created successfully', function () {
   assert.ok(response, 'Expected a successful response but got an error');
   assert.ok(response.id, 'Expected response to contain the created order ID');
+  createdOrderIds.push(response.id);
 });
 
 Then('the order should be created but marked as REJECTED', function () {
@@ -115,4 +119,23 @@ Then('the order should be created but marked as REJECTED', function () {
     'REJECTED',
     `Expected status to be REJECTED, got ${response.status}`,
   );
+  if (response.id) {
+    createdOrderIds.push(response.id);
+  }
+});
+
+After(async function () {
+  const secretKey = process.env.ADMIN_SECRET_KEY || 'supersecret123';
+  for (const id of createdOrderIds) {
+    try {
+      await axios.delete(`${baseUrl}/admin/orders/${id}`, {
+        headers: { 'x-api-key': secretKey },
+      });
+    } catch (e) {
+      console.warn(
+        `Failed to delete test order ${id} during teardown: ${e.message}`,
+      );
+    }
+  }
+  createdOrderIds = [];
 });
