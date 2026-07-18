@@ -25,8 +25,14 @@ import { ENVIRONMENTS } from '../common/constants/env.constants';
 
         if (isTest) {
           return {
-            type: 'better-sqlite3',
-            database: ':memory:',
+            type: 'postgres',
+            host: process.env.DB_HOST || 'localhost',
+            port: process.env.DB_PORT
+              ? parseInt(process.env.DB_PORT, 10)
+              : 5432,
+            username: process.env.DB_USERNAME || 'postgres',
+            password: process.env.DB_PASSWORD || 'password',
+            database: 'testdb',
             entities: [User, Instrument, Order, MarketData],
             synchronize: true,
             dropSchema: true,

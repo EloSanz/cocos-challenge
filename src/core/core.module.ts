@@ -41,6 +41,13 @@ import { DomainExceptionFilter } from '../common/filters/domain-exception.filter
           }),
         },
         /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+        base: undefined, // Removes pid and hostname
+        timestamp: () => `,"time":"${new Date().toISOString()}"`, // ISO time format
+        formatters: {
+          level: (label) => {
+            return { level: label };
+          },
+        },
       },
       forRoutes: ['{*path}'],
     }),
