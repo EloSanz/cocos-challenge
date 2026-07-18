@@ -32,6 +32,10 @@ Documento de decisiones técnicas y supuestos funcionales tomados durante el des
 - **Auditoría (Futura mejora)**: El esquema actual de `db.sql` no contempla campos como `created_at` o `updated_at`. Como mantenemos `synchronize: false`, el ORM no generará este DDL automáticamente. Queda documentado que en un futuro sería ideal agregar estas columnas explícitamente a las entidades (con `@CreateDateColumn` y `@UpdateDateColumn`) y crear la migración SQL correspondiente para llevar un mejor histórico de los registros.
 - **Migración preparada, no aplicada**: la migración del índice queda versionada pero **no se corrió** contra la base. Tratándola como una DB productiva, los cambios de schema no se aplican ad hoc ni en el boot de la app (`migrationsRun: false` implícito): se ejecutan en un paso deliberado del pipeline de deploy (`migration:run`), revisable y reversible (`migration:revert`). Además, sobre una tabla grande el índice debería crearse con `CREATE INDEX CONCURRENTLY` fuera de transacción para no bloquear escrituras.
 
+## Endpoints de Admin (solo desarrollo)
+
+- `DELETE /api/admin/*` (orders/users/instruments/marketdata) son **herramientas de desarrollo**, protegidas por `AdminGuard` (`x-api-key` contra `ADMIN_SECRET_KEY`) y **bloqueadas por completo en producción**. Advertencia consciente: borrar una orden `FILLED` reescribe el historial financiero, porque `orders` es el event log del que se deriva el balance — por eso jamás se exponen en prod.
+
 ## Escalabilidad (Portfolio)
 
 - **Costo actual**: el portfolio se reconstruye plegando *todas* las órdenes `FILLED` del usuario en cada `GET` (O(n)). El log de órdenes no tiene estado materializado.

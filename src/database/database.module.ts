@@ -15,11 +15,13 @@ interface DatabaseConfig {
   ssl: boolean;
 }
 
+import { ENVIRONMENTS } from '../common/constants/env.constants';
+
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
-        const isTest = process.env.NODE_ENV === 'test';
+        const isTest = process.env.NODE_ENV === ENVIRONMENTS.TEST;
 
         if (isTest) {
           return {

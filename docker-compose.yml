@@ -7,7 +7,8 @@ services:
     # Production runs on injected env vars (no .env file). These point the app
     # at the bundled `db` service, so `docker-compose up` is self-contained.
     environment:
-      NODE_ENV: production
+      NODE_ENV: ${NODE_ENV:-development}
+      ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-supersecret123}
       DB_HOST: db
       DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-localdb}

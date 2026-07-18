@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
-config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
+import { ENVIRONMENTS } from '../common/constants/env.constants';
+config({ path: `.env.${process.env.NODE_ENV || ENVIRONMENTS.DEVELOPMENT}` });
 import { DataSource } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Instrument } from './entities/instrument.entity';

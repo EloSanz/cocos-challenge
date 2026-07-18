@@ -10,7 +10,7 @@ import { seedTestData } from './utils/seed.util';
 import { setupTestApp } from './utils/app.util';
 
 const ADMIN_PATH = '/api/admin';
-const TEST_SECRET = 'test-admin-secret';
+const TEST_SECRET = 'supersecret123';
 
 describe('AdminController (e2e)', () => {
   let app: INestApplication<App>;

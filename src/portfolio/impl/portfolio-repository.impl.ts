@@ -34,14 +34,26 @@ export class PortfolioRepositoryImpl implements IPortfolioRepository {
   }
 
   /**
-   * Fetches the latest market price for all instruments using TypeORM QueryBuilder with DISTINCT ON.
+   * Fetches the latest market data row per instrument.
+   *
+   * Uses a portable MAX(date) subquery instead of Postgres' DISTINCT ON:
+   * TypeORM silently ignores distinctOn on non-Postgres drivers, so the
+   * SQLite-backed e2e suite would return every row (and the portfolio would
+   * price positions with a stale close) while production behaved correctly.
    */
   async findLatestMarketData(): Promise<MarketData[]> {
     return this.marketDataRepo
       .createQueryBuilder('md')
-      .distinctOn(['md.instrumentId'])
+      .where((qb) => {
+        const latestDate = qb
+          .subQuery()
+          .select('MAX(md2.date)')
+          .from(MarketData, 'md2')
+          .where('md2.instrumentId = md.instrumentId')
+          .getQuery();
+        return `md.date = ${latestDate}`;
+      })
       .orderBy('md.instrumentId', 'ASC')
-      .addOrderBy('md.date', 'DESC')
       .getMany();
   }
 }

@@ -1,5 +1,11 @@
-import { ArgumentsHost, Catch, HttpException, Logger } from '@nestjs/common';
-import { BaseExceptionFilter } from '@nestjs/core';
+import {
+  ArgumentsHost,
+  Catch,
+  HttpException,
+  Logger,
+  Inject,
+} from '@nestjs/common';
+import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core';
 import { Request } from 'express';
 
 /**
@@ -11,6 +17,10 @@ import { Request } from 'express';
 @Catch()
 export class AllExceptionsFilter extends BaseExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
+
+  constructor(@Inject(HttpAdapterHost) httpAdapterHost: HttpAdapterHost) {
+    super(httpAdapterHost.httpAdapter);
+  }
 
   catch(exception: unknown, host: ArgumentsHost): void {
     if (!(exception instanceof HttpException)) {
