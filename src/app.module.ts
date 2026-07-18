@@ -3,7 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { LoggerModule } from 'nestjs-pino';
 import { CacheModule } from '@nestjs/cache-manager';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { DatabaseModule } from './database/database.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { OrdersModule } from './orders/orders.module';
@@ -33,6 +34,12 @@ import { ENVIRONMENTS } from './common/constants/env.constants';
         },
       },
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 60 seconds
+        limit: 100, // max 100 requests per minute per IP
+      },
+    ]),
     // max caps the in-memory store's entry count: the default Keyv store has
     // no bound, and the cache key is the full request URL (querystring
     // included), so unbounded distinct queries would otherwise grow forever.
@@ -54,6 +61,7 @@ import { ENVIRONMENTS } from './common/constants/env.constants';
     AdminModule,
   ],
   providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     // Note: The order matters. DomainExceptionFilter takes precedence.
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_FILTER, useClass: DomainExceptionFilter },
