@@ -63,7 +63,8 @@ describe('PortfolioController (e2e)', () => {
   it(`${API_PATHS.PORTFOLIO}/:userId (GET) - success for seeded user`, () => {
     // Seed: CASH_IN 10000, BUY 10 AAPL @ 150 -> cash 8500.
     // AAPL latest close is 200 (NOT the stale 100 row): value 2000,
-    // return (2000 - 1500) / 1500 = 33.33%.
+    // total return (2000 - 1500) / 1500 = 33.33%.
+    // daily return (close 200 vs previousClose 190) = (200-190)/190 = 5.26%.
     return request(app.getHttpServer())
       .get(`${API_PATHS.PORTFOLIO}/1`)
       .expect(200)
@@ -78,6 +79,7 @@ describe('PortfolioController (e2e)', () => {
             shares: 10,
             totalValue: 2000,
             totalReturnPct: 33.33,
+            dailyReturnPct: 5.26,
           },
         ]);
       });

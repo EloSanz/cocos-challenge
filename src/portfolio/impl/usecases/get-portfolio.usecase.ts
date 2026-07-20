@@ -89,6 +89,17 @@ export class GetPortfolioUseCaseImpl implements IGetPortfolioUseCase {
           .times(100);
       }
 
+      // Daily return of the instrument's price (today's close vs the previous
+      // close), per the challenge: (close - previousClose) / previousClose.
+      // Zero when there is no market data (or a zero previous close).
+      let dailyReturnPct = ZERO();
+      if (mkt && mkt.previousClose.gt(0)) {
+        dailyReturnPct = mkt.close
+          .minus(mkt.previousClose)
+          .div(mkt.previousClose)
+          .times(100);
+      }
+
       totalAssetValue = totalAssetValue.plus(totalValue);
 
       const meta = metaById.get(instId);
@@ -98,6 +109,7 @@ export class GetPortfolioUseCaseImpl implements IGetPortfolioUseCase {
         shares: pos.shares,
         totalValue: roundMoney(totalValue),
         totalReturnPct: totalReturnPct.round(2).toNumber(),
+        dailyReturnPct: dailyReturnPct.round(2).toNumber(),
       });
     }
 

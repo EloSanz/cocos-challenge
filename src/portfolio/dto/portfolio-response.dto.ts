@@ -25,6 +25,12 @@ export class PositionDto {
    * @example -0.45
    */
   totalReturnPct: number;
+
+  /**
+   * Daily return of the instrument (today's close vs the previous close), in %
+   * @example 1.54
+   */
+  dailyReturnPct: number;
 }
 
 export class PortfolioResponseDto {

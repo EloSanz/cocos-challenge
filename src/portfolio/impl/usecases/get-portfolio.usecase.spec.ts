@@ -123,6 +123,8 @@ describe('GetPortfolioUseCaseImpl', () => {
       expect(result.positions[0].shares).toBe(10);
       // return = (150 - 100) / 100 = 50%
       expect(result.positions[0].totalReturnPct).toBe(50);
+      // daily return = (15 - 10) / 10 = 50%
+      expect(result.positions[0].dailyReturnPct).toBe(50);
       // total value = 900 + 150 = 1050
       expect(result.totalAccountValue).toBe(1050);
     });
@@ -149,6 +151,8 @@ describe('GetPortfolioUseCaseImpl', () => {
       // instead of the whole endpoint failing.
       expect(result.positions[0].totalValue).toBe(100);
       expect(result.positions[0].totalReturnPct).toBe(0);
+      // No market data => no daily return either.
+      expect(result.positions[0].dailyReturnPct).toBe(0);
     });
 
     it('should omit closed positions (shares back to zero)', async () => {
@@ -203,6 +207,9 @@ describe('GetPortfolioUseCaseImpl', () => {
       expect(result.positions[0].totalValue).toBe(-800);
       // Short return: (avgPrice - close) / avgPrice = (100 - 80) / 100 = 20%.
       expect(result.positions[0].totalReturnPct).toBe(20);
+      // Daily return is the instrument's price move, not position-aware:
+      // (close - previousClose) / previousClose = (80 - 100) / 100 = -20%.
+      expect(result.positions[0].dailyReturnPct).toBe(-20);
     });
 
     it('should leave return at 0 when shares > 0 but totalCost is 0 (implicit else)', async () => {
