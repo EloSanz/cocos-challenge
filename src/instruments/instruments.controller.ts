@@ -12,7 +12,7 @@ import { SearchInstrumentsResponseDto } from './dto/search-instruments-response.
 import { toSearchInstrumentsResponseDto } from './instruments.mapper';
 import { ISearchInstrumentsUseCaseToken } from './interfaces/search-instruments-usecase.interface';
 import type { ISearchInstrumentsUseCase } from './interfaces/search-instruments-usecase.interface';
-import { ApiSearchInstruments } from './instruments.swagger';
+import { ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('instruments')
 @Controller('instruments')
@@ -24,7 +24,16 @@ export class InstrumentsController {
 
   @Get()
   @UseInterceptors(CacheInterceptor)
-  @ApiSearchInstruments()
+  /**
+   * Search tradable instruments by ticker and/or name
+   *
+   * Case-insensitive partial match on ticker or name. The cash (MONEDA) pseudo-instrument is never returned. Supports `limit`/`offset` pagination.
+   */
+  @ApiResponse({
+    status: 400,
+    description:
+      '"q" is missing/too short, or "limit"/"offset" are out of range',
+  })
   async search(
     @Query() dto: SearchInstrumentsDto,
   ): Promise<SearchInstrumentsResponseDto> {

@@ -13,6 +13,7 @@ describe('portfolio.mapper', () => {
           shares: 40,
           totalValue: 37034,
           totalReturnPct: -0.45,
+          dailyReturnPct: 1.54,
         },
       ],
     };
@@ -27,6 +28,7 @@ describe('portfolio.mapper', () => {
           shares: 40,
           totalValue: 37034,
           totalReturnPct: -0.45,
+          dailyReturnPct: 1.54,
         },
       ],
     });

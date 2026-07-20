@@ -5,6 +5,8 @@ export interface PositionResult {
   shares: number;
   totalValue: number;
   totalReturnPct: number;
+  /** Instrument's daily price change: (close - previousClose) / previousClose. */
+  dailyReturnPct: number;
 }
 
 /** Application-layer output for a user's portfolio (transport-agnostic). */

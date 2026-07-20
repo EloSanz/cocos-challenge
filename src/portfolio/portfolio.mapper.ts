@@ -14,6 +14,7 @@ export function toPortfolioResponseDto(
       shares: pos.shares,
       totalValue: pos.totalValue,
       totalReturnPct: pos.totalReturnPct,
+      dailyReturnPct: pos.dailyReturnPct,
     })),
   };
 }
