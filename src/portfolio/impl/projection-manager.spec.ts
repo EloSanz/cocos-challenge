@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import Big from 'big.js';
 import { ProjectionManager } from './projection-manager';
+import { ZERO } from '../../common/money';
 import { IPortfolioRepositoryToken } from '../interfaces/portfolio-repository.interface';
 import { IMutexToken } from '../../common/interfaces/mutex.interface';
 import { ResourceLockedException } from '../../common/exceptions/domain.exceptions';
@@ -108,6 +109,25 @@ describe('ProjectionManager', () => {
       expect(pos.shares).toBe(5);
       expect(pos.totalCost.toNumber()).toBe(500);
       expect(pos.avgPrice.toNumber()).toBe(100);
+    });
+
+    it('should rethrow errors that are not ResourceLockedException during updateSnapshot', async () => {
+      const error = new Error('Database error');
+      mockLocks.acquire.mockRejectedValue(error);
+      await expect(manager.updateSnapshot(1)).rejects.toThrow('Database error');
+    });
+
+    it('should exit early in updateSnapshot if ordersToProcess is empty', async () => {
+      mockLocks.acquire.mockResolvedValue(jest.fn());
+      mockRepo.findSnapshotByUser.mockResolvedValue({
+        userId: 1,
+        lastOrderId: 10,
+        availableCash: ZERO(),
+        positions: {},
+      });
+      mockRepo.findFilledOrdersAfter.mockResolvedValue([]);
+      await manager.updateSnapshot(1);
+      expect(mockRepo.saveSnapshot).not.toHaveBeenCalled();
     });
 
     it('returns the snapshot as-is when no orders were filled after it', async () => {

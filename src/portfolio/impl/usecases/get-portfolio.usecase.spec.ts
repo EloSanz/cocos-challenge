@@ -204,5 +204,33 @@ describe('GetPortfolioUseCaseImpl', () => {
       // Short return: (avgPrice - close) / avgPrice = (100 - 80) / 100 = 20%.
       expect(result.positions[0].totalReturnPct).toBe(20);
     });
+
+    it('should leave return at 0 when shares > 0 but totalCost is 0 (implicit else)', async () => {
+      mockProjectionManager.getProjection.mockResolvedValue({
+        availableCash: new Big('1000'),
+        positions: new Map([
+          [4, { shares: 10, totalCost: ZERO(), avgPrice: ZERO() }],
+        ]),
+      });
+      mockPortfolioRepo.findLatestMarketData.mockResolvedValue([]);
+      mockPortfolioRepo.findInstrumentsByIds.mockResolvedValue([]);
+
+      const result = await useCase.execute(1);
+      expect(result.positions[0].totalReturnPct).toBe(0);
+    });
+
+    it('should leave return at 0 when shares < 0 but totalCost is 0 (implicit else)', async () => {
+      mockProjectionManager.getProjection.mockResolvedValue({
+        availableCash: new Big('1000'),
+        positions: new Map([
+          [5, { shares: -10, totalCost: ZERO(), avgPrice: ZERO() }],
+        ]),
+      });
+      mockPortfolioRepo.findLatestMarketData.mockResolvedValue([]);
+      mockPortfolioRepo.findInstrumentsByIds.mockResolvedValue([]);
+
+      const result = await useCase.execute(1);
+      expect(result.positions[0].totalReturnPct).toBe(0);
+    });
   });
 });

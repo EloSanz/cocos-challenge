@@ -301,6 +301,21 @@ describe('CreateOrderUseCaseImpl', () => {
     ).rejects.toThrow(InvalidInputException);
   });
 
+  it('allows CASH_IN orders to execute immediately', async () => {
+    projectionManager.getProjection.mockResolvedValue({
+      availableCash: new Big(0),
+      positions: new Map(),
+    });
+    const result = await useCase.execute({
+      userId: 1,
+      instrumentId: 10,
+      type: OrderType.MARKET,
+      side: OrderSide.CASH_IN,
+      size: 10,
+    });
+    expect(result.status).toBe(OrderStatus.FILLED);
+  });
+
   describe('concurrency', () => {
     it('throws ResourceLockedException on concurrent orders for the same user', async () => {
       const orderDto = {

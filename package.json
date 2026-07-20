@@ -106,6 +106,18 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
+    "coveragePathIgnorePatterns": [
+      "\\.module\\.ts$",
+      "\\.dto\\.ts$",
+      "\\.entity\\.ts$",
+      "\\.interface\\.ts$",
+      "\\.enum\\.ts$",
+      "\\.swagger\\.ts$",
+      "main\\.ts$",
+      "/scripts/",
+      "/database/migrations/",
+      "/database/data-source\\.ts$"
+    ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "coverageThreshold": {
