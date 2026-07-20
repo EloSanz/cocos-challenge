@@ -4,7 +4,7 @@ import { PortfolioResponseDto } from './dto/portfolio-response.dto';
 import { toPortfolioResponseDto } from './portfolio.mapper';
 import { IGetPortfolioUseCaseToken } from './interfaces/get-portfolio-usecase.interface';
 import type { IGetPortfolioUseCase } from './interfaces/get-portfolio-usecase.interface';
-import { ApiGetPortfolio } from './portfolio.swagger';
+import { ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('portfolio')
 @Controller('portfolio')
@@ -15,7 +15,13 @@ export class PortfolioController {
   ) {}
 
   @Get(':userId')
-  @ApiGetPortfolio()
+  /**
+   * Get the total account value, available cash and current positions for a user
+   */
+  @ApiResponse({
+    status: 404,
+    description: 'No portfolio data found for the user',
+  })
   async getPortfolio(
     @Param('userId', ParseIntPipe) userId: number,
   ): Promise<PortfolioResponseDto> {
