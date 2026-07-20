@@ -6,12 +6,9 @@ services:
       - '3000:3000'
     # Production runs on injected env vars (no .env file). These point the app
     # at the bundled `db` service, so `docker-compose up` is self-contained.
-    # Defaults to production posture (AdminGuard disables /admin entirely).
-    # To exercise the admin endpoints locally, override explicitly:
-    #   NODE_ENV=development docker-compose up
+    # Override DB_HOST/DB_SSL (e.g. via --env-file .env.production) to target Neon.
     environment:
       NODE_ENV: ${NODE_ENV:-production}
-      ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-supersecret123}
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
       DB_DATABASE: ${DB_DATABASE:-localdb}
