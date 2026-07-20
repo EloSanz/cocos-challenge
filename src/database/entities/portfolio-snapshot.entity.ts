@@ -46,9 +46,6 @@ export class PortfolioSnapshot {
   @Column({ type: 'jsonb' })
   positions: Record<string, { shares: number; totalCost: string }>;
 
-  @Column({ default: 0 })
-  version: number;
-
   @CreateDateColumn()
   createdAt: Date;
 

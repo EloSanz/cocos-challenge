@@ -44,7 +44,6 @@ CREATE TABLE portfolio_snapshots (
   lastorderid INT NOT NULL DEFAULT 0,
   availablecash NUMERIC(15, 2) NOT NULL DEFAULT 0.00,
   positions JSONB NOT NULL DEFAULT '{}'::jsonb,
-  version INT NOT NULL DEFAULT 0,
   "createdAt" TIMESTAMP DEFAULT now(),
   "updatedAt" TIMESTAMP DEFAULT now(),
   FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE

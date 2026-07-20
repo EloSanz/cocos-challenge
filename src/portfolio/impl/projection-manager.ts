@@ -47,7 +47,6 @@ export class ProjectionManager {
         snapshot.lastOrderId = 0;
         snapshot.availableCash = ZERO();
         snapshot.positions = {};
-        snapshot.version = 0;
       }
 
       const ordersToProcess = await this.portfolioRepo.findFilledOrdersAfter(
@@ -69,7 +68,6 @@ export class ProjectionManager {
       snapshot.availableCash = updated.availableCash;
       snapshot.positions = SnapshotConverter.toJsonb(updated.positions);
       snapshot.lastOrderId = ordersToProcess[ordersToProcess.length - 1].id;
-      snapshot.version += 1;
 
       await this.portfolioRepo.saveSnapshot(snapshot);
     } finally {

@@ -192,6 +192,5 @@ describe('OrdersController (e2e)', () => {
     // totalCost = 1500 + 2000 = 3500
     expect(Number(snapshot!.positions['2'].totalCost)).toBe(3500);
     expect(snapshot!.lastOrderId).toBeGreaterThan(0);
-    expect(snapshot!.version).toBeGreaterThan(0);
   });
 });

@@ -36,11 +36,6 @@ export class CreatePortfolioSnapshotTable1784400000000 implements MigrationInter
             default: "'{}'::jsonb",
           },
           {
-            name: 'version',
-            type: 'integer',
-            default: 0,
-          },
-          {
             name: 'createdAt',
             type: 'timestamp',
             default: 'now()',
