@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import Big from 'big.js';
 import {
   EntityNotFoundException,
@@ -6,6 +7,7 @@ import {
   ResourceLockedException,
 } from '../../../common/exceptions/domain.exceptions';
 import { CreateOrderUseCaseImpl } from './create-order.usecase';
+import { ProjectionManager } from '../../../portfolio/impl/projection-manager';
 import { IOrdersRepositoryToken } from '../../interfaces/orders-repository.interface';
 import type { IOrdersRepository } from '../../interfaces/orders-repository.interface';
 import {
@@ -23,6 +25,7 @@ import { IMutexToken } from '../../../common/interfaces/mutex.interface';
 describe('CreateOrderUseCaseImpl', () => {
   let useCase: CreateOrderUseCaseImpl;
   let repo: jest.Mocked<IOrdersRepository>;
+  let projectionManager: jest.Mocked<ProjectionManager>;
 
   const user = {
     id: 1,
@@ -42,31 +45,6 @@ describe('CreateOrderUseCaseImpl', () => {
     previousClose: new Big('480.00'),
   } as MarketData;
 
-  const cashInOrder = (userId: number, size: number): Order =>
-    ({
-      instrumentId: 66,
-      userId,
-      side: OrderSide.CASH_IN,
-      size,
-      price: new Big('1.00'),
-      status: OrderStatus.FILLED,
-    }) as Order;
-
-  const buyOrder = (
-    userId: number,
-    instrumentId: number,
-    size: number,
-    price: number,
-  ): Order =>
-    ({
-      instrumentId,
-      userId,
-      side: OrderSide.BUY,
-      size,
-      price: new Big(price),
-      status: OrderStatus.FILLED,
-    }) as Order;
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -74,6 +52,10 @@ describe('CreateOrderUseCaseImpl', () => {
         {
           provide: IMutexToken,
           useClass: KeyedMutex,
+        },
+        {
+          provide: ProjectionManager,
+          useValue: { getProjection: jest.fn() },
         },
         {
           provide: IOrdersRepositoryToken,
@@ -85,11 +67,19 @@ describe('CreateOrderUseCaseImpl', () => {
             createOrder: jest.fn(),
           },
         },
+        {
+          provide: EventEmitter2,
+          useValue: {
+            emit: jest.fn(),
+            emitAsync: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     useCase = module.get(CreateOrderUseCaseImpl);
     repo = module.get(IOrdersRepositoryToken);
+    projectionManager = module.get(ProjectionManager);
 
     repo.findUserById.mockResolvedValue(user);
     repo.findInstrumentById.mockResolvedValue(instrument);
@@ -102,7 +92,10 @@ describe('CreateOrderUseCaseImpl', () => {
   afterEach(() => jest.clearAllMocks());
 
   it('fills a MARKET BUY order at the latest close price when cash is sufficient', async () => {
-    repo.findFilledOrdersByUser.mockResolvedValue([cashInOrder(1, 100000)]);
+    projectionManager.getProjection.mockResolvedValue({
+      availableCash: new Big(100000),
+      positions: new Map(),
+    });
 
     const result = await useCase.execute({
       userId: 1,
@@ -122,7 +115,10 @@ describe('CreateOrderUseCaseImpl', () => {
   });
 
   it('rejects a BUY order that costs more than the available cash', async () => {
-    repo.findFilledOrdersByUser.mockResolvedValue([cashInOrder(1, 1000)]);
+    projectionManager.getProjection.mockResolvedValue({
+      availableCash: new Big(1000),
+      positions: new Map(),
+    });
 
     const result = await useCase.execute({
       userId: 1,
@@ -136,7 +132,10 @@ describe('CreateOrderUseCaseImpl', () => {
   });
 
   it('marks a LIMIT order as NEW instead of FILLED when funds are sufficient', async () => {
-    repo.findFilledOrdersByUser.mockResolvedValue([cashInOrder(1, 100000)]);
+    projectionManager.getProjection.mockResolvedValue({
+      availableCash: new Big(100000),
+      positions: new Map(),
+    });
 
     const result = await useCase.execute({
       userId: 1,
@@ -152,10 +151,12 @@ describe('CreateOrderUseCaseImpl', () => {
   });
 
   it('rejects a SELL order when the user does not hold enough shares', async () => {
-    repo.findFilledOrdersByUser.mockResolvedValue([
-      cashInOrder(1, 100000),
-      buyOrder(1, 10, 5, 500),
-    ]);
+    projectionManager.getProjection.mockResolvedValue({
+      availableCash: new Big(100000),
+      positions: new Map([
+        [10, { shares: 5, totalCost: new Big(2500), avgPrice: new Big(500) }],
+      ]),
+    });
 
     const result = await useCase.execute({
       userId: 1,
@@ -169,10 +170,12 @@ describe('CreateOrderUseCaseImpl', () => {
   });
 
   it('fills a SELL order when the user holds enough shares', async () => {
-    repo.findFilledOrdersByUser.mockResolvedValue([
-      cashInOrder(1, 100000),
-      buyOrder(1, 10, 10, 500),
-    ]);
+    projectionManager.getProjection.mockResolvedValue({
+      availableCash: new Big(100000),
+      positions: new Map([
+        [10, { shares: 10, totalCost: new Big(5000), avgPrice: new Big(500) }],
+      ]),
+    });
 
     const result = await useCase.execute({
       userId: 1,
@@ -186,7 +189,10 @@ describe('CreateOrderUseCaseImpl', () => {
   });
 
   it('computes the max whole number of shares when an amount in pesos is sent instead of size', async () => {
-    repo.findFilledOrdersByUser.mockResolvedValue([cashInOrder(1, 100000)]);
+    projectionManager.getProjection.mockResolvedValue({
+      availableCash: new Big(100000),
+      positions: new Map(),
+    });
 
     const result = await useCase.execute({
       userId: 1,
@@ -237,7 +243,10 @@ describe('CreateOrderUseCaseImpl', () => {
   });
 
   it('throws InvalidInputException when the amount cannot buy at least one share', async () => {
-    repo.findFilledOrdersByUser.mockResolvedValue([cashInOrder(1, 100000)]);
+    projectionManager.getProjection.mockResolvedValue({
+      availableCash: new Big(100000),
+      positions: new Map(),
+    });
 
     await expect(
       useCase.execute({
@@ -302,9 +311,9 @@ describe('CreateOrderUseCaseImpl', () => {
         size: 15,
       };
 
-      repo.findFilledOrdersByUser.mockImplementation(async () => {
+      projectionManager.getProjection.mockImplementation(async () => {
         await new Promise((r) => setTimeout(r, 50));
-        return [cashInOrder(1, 10000)];
+        return { availableCash: new Big(10000), positions: new Map() };
       });
 
       const first = useCase.execute(orderDto);

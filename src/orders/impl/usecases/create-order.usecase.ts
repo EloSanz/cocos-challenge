@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import Big from 'big.js';
 import {
   EntityNotFoundException,
@@ -15,10 +16,11 @@ import { IOrdersRepositoryToken } from '../../interfaces/orders-repository.inter
 import type { IOrdersRepository } from '../../interfaces/orders-repository.interface';
 import { IMutexToken } from '../../../common/interfaces/mutex.interface';
 import type { IMutex } from '../../../common/interfaces/mutex.interface';
-import { projectAccount } from '../../../common/account-projection';
 import { CreateOrderCommand } from '../../interfaces/create-order.command';
 import { OrderResult } from '../../interfaces/order.result';
 import { ICreateOrderUseCase } from '../../interfaces/create-order-usecase.interface';
+import { OrderFilledEvent } from '../../listeners/order-filled.listener';
+import { ProjectionManager } from '../../../portfolio/impl/projection-manager';
 
 @Injectable()
 export class CreateOrderUseCaseImpl implements ICreateOrderUseCase {
@@ -29,6 +31,8 @@ export class CreateOrderUseCaseImpl implements ICreateOrderUseCase {
     private readonly ordersRepo: IOrdersRepository,
     @Inject(IMutexToken)
     private readonly locks: IMutex,
+    private readonly eventEmitter: EventEmitter2,
+    private readonly projectionManager: ProjectionManager,
   ) {}
 
   async execute(command: CreateOrderCommand): Promise<OrderResult> {
@@ -45,10 +49,8 @@ export class CreateOrderUseCaseImpl implements ICreateOrderUseCase {
     let order: Order;
 
     try {
-      const filledOrders = await this.ordersRepo.findFilledOrdersByUser(
-        command.userId,
-      );
-      const { availableCash, positions } = projectAccount(filledOrders); // TODO luego entender bien que esta pasando aca
+      const { availableCash, positions } =
+        await this.projectionManager.getProjection(command.userId);
 
       const heldShares: number =
         positions.get(command.instrumentId)?.shares ?? 0;
@@ -66,6 +68,13 @@ export class CreateOrderUseCaseImpl implements ICreateOrderUseCase {
       order = await this.persistOrder(command, size, executionPrice, status);
     } finally {
       await release();
+    }
+
+    if (order.status === OrderStatus.FILLED) {
+      this.eventEmitter.emit(
+        OrderFilledEvent.name,
+        new OrderFilledEvent(order.id, order.userId),
+      );
     }
 
     return toOrderResult(order);

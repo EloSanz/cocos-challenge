@@ -13,9 +13,14 @@ import { ICancelOrderUseCaseToken } from './interfaces/cancel-order-usecase.inte
 import { CancelOrderUseCaseImpl } from './impl/usecases/cancel-order.usecase';
 import { KeyedMutex } from '../infrastructure/mutex/keyed-mutex';
 import { IMutexToken } from '../common/interfaces/mutex.interface';
+import { PortfolioModule } from '../portfolio/portfolio.module';
+import { OrderFilledListener } from './listeners/order-filled.listener';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, Instrument, User, MarketData])],
+  imports: [
+    TypeOrmModule.forFeature([Order, Instrument, User, MarketData]),
+    PortfolioModule,
+  ],
   controllers: [OrdersController],
   providers: [
     {
@@ -34,6 +39,7 @@ import { IMutexToken } from '../common/interfaces/mutex.interface';
       provide: ICancelOrderUseCaseToken,
       useClass: CancelOrderUseCaseImpl,
     },
+    OrderFilledListener,
   ],
 })
 export class OrdersModule {}
