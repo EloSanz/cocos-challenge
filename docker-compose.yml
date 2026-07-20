@@ -12,12 +12,12 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-supersecret123}
-      DB_HOST: db
-      DB_PORT: 5432
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
       DB_DATABASE: ${DB_DATABASE:-localdb}
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-password}
-      DB_SSL: 'false'
+      DB_SSL: ${DB_SSL:-false}
       PORT: 3000
       # Plain (non-colorized) logs so Loki/Grafana don't show ANSI escape codes.
       NO_COLOR: '1'

@@ -89,7 +89,15 @@ Para ejecutar el proyecto localmente, solo necesitas tener Docker y Node instala
 # 1. Instalar dependencias locales (útil para el autocompletado y tests)
 npm install
 
-# 2. Levantar la infraestructura completa (App, BD, Logs)
+### Conectar a Base de Datos en Producción (Neon)
+Para apuntar el contenedor de la API a la base de datos de producción (Neon) en lugar del contenedor local de PostgreSQL, utilizaremos el archivo `.env.production` provisto en el repositorio. Simplemente pasale a Docker Compose dicho archivo de entorno:
+
+```bash
+docker-compose --env-file .env.production up --build
+```
+Al hacerlo, podrás verificar en los logs de inicio de la API que efectivamente está conectada a Neon (`DB_HOST: ep-wild-boat...`).
+
+# 2. Levantar la infraestructura completa (App, BD, Logs) localmente
 docker-compose up -d --build
 
 # 3. Correr las migraciones (crea la tabla portfolio_snapshots, requerida para operar)
