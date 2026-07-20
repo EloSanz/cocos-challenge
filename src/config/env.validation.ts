@@ -33,6 +33,4 @@ export const envValidationSchema = Joi.object({
   }),
   DB_SSL: Joi.boolean().default(false),
   PORT: Joi.number().port().default(3000),
-  // Optional: without it, the AdminGuard fails securely (denies all access).
-  ADMIN_SECRET_KEY: Joi.string().optional(),
 });
