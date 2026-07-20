@@ -1,34 +1,37 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { InstrumentResponseDto } from './instrument-response.dto';
 
 export class SearchMetaDto {
-  @ApiProperty({
-    example: 1,
-    description: 'Number of instruments in this page',
-  })
+  /**
+   * Number of instruments in this page
+   * @example 1
+   */
   count: number;
 
-  @ApiProperty({
-    example: 1,
-    description:
-      'Total number of instruments matching the query, across all pages',
-  })
+  /**
+   * Total number of instruments matching the query, across all pages
+   * @example 1
+   */
   total: number;
 
-  @ApiProperty({ example: 20 })
+  /**
+   * @example 20
+   */
   limit: number;
 
-  @ApiProperty({ example: 0 })
+  /**
+   * @example 0
+   */
   offset: number;
 
-  @ApiProperty({ example: 'PAMP', description: 'Search term that was used' })
+  /**
+   * Search term that was used
+   * @example 'PAMP'
+   */
   query: string;
 }
 
 export class SearchInstrumentsResponseDto {
-  @ApiProperty({ type: [InstrumentResponseDto] })
   data: InstrumentResponseDto[];
 
-  @ApiProperty({ type: SearchMetaDto })
   meta: SearchMetaDto;
 }

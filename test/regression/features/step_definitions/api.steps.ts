@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
-import { Given, When, Then, After } from '@cucumber/cucumber';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+import { Given, When, Then } from '@cucumber/cucumber';
 import axios from 'axios';
 import * as assert from 'assert';
 
 let baseUrl = '';
 let response: any = null;
 let lastInstrumentId: number | null = null;
-let createdOrderIds: number[] = [];
 
 // Versioned API routes live under /v1 (see app.enableVersioning in main.ts);
 // /health is intentionally VERSION_NEUTRAL and stays outside /v1.
@@ -113,7 +112,6 @@ When(
 Then('the order should be created successfully', function () {
   assert.ok(response, 'Expected a successful response but got an error');
   assert.ok(response.id, 'Expected response to contain the created order ID');
-  createdOrderIds.push(response.id);
 });
 
 Then('the order should be created but marked as REJECTED', function () {
@@ -123,23 +121,4 @@ Then('the order should be created but marked as REJECTED', function () {
     'REJECTED',
     `Expected status to be REJECTED, got ${response.status}`,
   );
-  if (response.id) {
-    createdOrderIds.push(response.id);
-  }
-});
-
-After(async function () {
-  const secretKey = process.env.ADMIN_SECRET_KEY || 'supersecret123';
-  for (const id of createdOrderIds) {
-    try {
-      await axios.delete(v1(`/admin/orders/${id}`), {
-        headers: { 'x-api-key': secretKey },
-      });
-    } catch (e) {
-      console.warn(
-        `Failed to delete test order ${id} during teardown: ${e.message}`,
-      );
-    }
-  }
-  createdOrderIds = [];
 });

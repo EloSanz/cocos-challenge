@@ -38,6 +38,18 @@ CREATE TABLE marketdata (
   FOREIGN KEY (instrumentId) REFERENCES instruments(id)
 );
 
+CREATE TABLE portfolio_snapshots (
+  id SERIAL PRIMARY KEY,
+  userid INT NOT NULL UNIQUE,
+  lastorderid INT NOT NULL DEFAULT 0,
+  availablecash NUMERIC(15, 2) NOT NULL DEFAULT 0.00,
+  positions JSONB NOT NULL DEFAULT '{}'::jsonb,
+  "createdAt" TIMESTAMP DEFAULT now(),
+  "updatedAt" TIMESTAMP DEFAULT now(),
+  FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
 INSERT INTO users (email,accountNumber) VALUES
    ('emiliano@test.com','10001'),
    ('jose@test.com','10002'),

@@ -8,6 +8,10 @@ import { DataSource } from 'typeorm';
 import { seedTestData, API_PATHS } from './utils/seed.util';
 import { setupTestApp } from './utils/app.util';
 
+import { IPortfolioRepositoryToken } from '../../src/portfolio/interfaces/portfolio-repository.interface';
+import type { IPortfolioRepository } from '../../src/portfolio/interfaces/portfolio-repository.interface';
+import Big from 'big.js';
+
 describe('PortfolioController (e2e)', () => {
   let app: INestApplication<App>;
   let dataSource: DataSource;
@@ -23,6 +27,33 @@ describe('PortfolioController (e2e)', () => {
     // Seed test data
     dataSource = app.get(DataSource);
     await seedTestData(dataSource);
+
+    // Mock findLatestMarketData to workaround SQLite lacking DISTINCT ON support
+    const portfolioRepo = app.get<IPortfolioRepository>(
+      IPortfolioRepositoryToken,
+    );
+    jest.spyOn(portfolioRepo, 'findLatestMarketData').mockResolvedValue([
+      {
+        instrumentId: 1,
+        close: new Big(1),
+        previousClose: new Big(1),
+      } as any,
+      {
+        instrumentId: 2,
+        close: new Big(200),
+        previousClose: new Big(190),
+      } as any,
+      {
+        instrumentId: 3,
+        close: new Big(150),
+        previousClose: new Big(145),
+      } as any,
+      {
+        instrumentId: 4,
+        close: new Big(1),
+        previousClose: new Big(1),
+      } as any,
+    ]);
   });
 
   afterAll(async () => {

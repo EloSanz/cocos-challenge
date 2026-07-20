@@ -5,6 +5,7 @@ import { User } from './entities/user.entity';
 import { Instrument } from './entities/instrument.entity';
 import { Order } from './entities/order.entity';
 import { MarketData } from './entities/marketdata.entity';
+import { PortfolioSnapshot } from './entities/portfolio-snapshot.entity';
 
 interface DatabaseConfig {
   host: string;
@@ -27,7 +28,7 @@ import { ENVIRONMENTS } from '../common/constants/env.constants';
           return {
             type: 'better-sqlite3',
             database: ':memory:',
-            entities: [User, Instrument, Order, MarketData],
+            entities: [User, Instrument, Order, MarketData, PortfolioSnapshot],
             synchronize: true,
             dropSchema: true,
           };
@@ -45,7 +46,7 @@ import { ENVIRONMENTS } from '../common/constants/env.constants';
           username: dbConfig.username,
           password: dbConfig.password,
           ssl: dbConfig.ssl ? { rejectUnauthorized: false } : false,
-          entities: [User, Instrument, Order, MarketData],
+          entities: [User, Instrument, Order, MarketData, PortfolioSnapshot],
           synchronize: false, // Read-only, no synchronization
           retryAttempts: 10,
           retryDelay: 3000,

@@ -1,5 +1,6 @@
 import { Module, Global } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
 import { LoggerModule } from 'nestjs-pino';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -15,6 +16,7 @@ import { DomainExceptionFilter } from '../common/filters/domain-exception.filter
 @Global()
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     LoggerModule.forRoot({
       pinoHttp: {
         customProps: () => ({
@@ -41,6 +43,13 @@ import { DomainExceptionFilter } from '../common/filters/domain-exception.filter
           }),
         },
         /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+        base: undefined, // Removes pid and hostname
+        timestamp: () => `,"time":"${new Date().toISOString()}"`, // ISO time format
+        formatters: {
+          level: (label) => {
+            return { level: label };
+          },
+        },
       },
       forRoutes: ['{*path}'],
     }),

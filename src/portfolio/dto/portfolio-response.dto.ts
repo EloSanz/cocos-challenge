@@ -1,38 +1,44 @@
-import { ApiProperty } from '@nestjs/swagger';
-
 export class PositionDto {
-  @ApiProperty({ example: 'PAMP' })
+  /**
+   * @example 'PAMP'
+   */
   ticker: string;
 
-  @ApiProperty({ example: 'Pampa Holding S.A.' })
+  /**
+   * @example 'Pampa Holding S.A.'
+   */
   name: string;
 
-  @ApiProperty({ example: 40 })
+  /**
+   * @example 40
+   */
   shares: number;
 
-  @ApiProperty({
-    example: 37034,
-    description: 'Current market value of the position, in pesos',
-  })
+  /**
+   * Current market value of the position, in pesos
+   * @example 37034
+   */
   totalValue: number;
 
-  @ApiProperty({
-    example: -0.45,
-    description: 'Total return since the position was opened, in %',
-  })
+  /**
+   * Total return since the position was opened, in %
+   * @example -0.45
+   */
   totalReturnPct: number;
 }
 
 export class PortfolioResponseDto {
-  @ApiProperty({
-    example: 889756,
-    description: 'Available cash plus the market value of all positions',
-  })
+  /**
+   * Available cash plus the market value of all positions
+   * @example 889756
+   */
   totalAccountValue: number;
 
-  @ApiProperty({ example: 753000, description: 'Pesos available to operate' })
+  /**
+   * Pesos available to operate
+   * @example 753000
+   */
   availableCash: number;
 
-  @ApiProperty({ type: [PositionDto] })
   positions: PositionDto[];
 }

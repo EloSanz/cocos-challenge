@@ -7,6 +7,8 @@ import { Instrument } from './entities/instrument.entity';
 import { Order } from './entities/order.entity';
 import { MarketData } from './entities/marketdata.entity';
 
+import { PortfolioSnapshot } from './entities/portfolio-snapshot.entity';
+
 /**
  * Standalone DataSource used only by the TypeORM CLI for migrations.
  *
@@ -23,7 +25,7 @@ export default new DataSource({
   username: process.env.DB_USERNAME || 'postgres',
   password: process.env.DB_PASSWORD || '',
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
-  entities: [User, Instrument, Order, MarketData],
+  entities: [User, Instrument, Order, MarketData, PortfolioSnapshot],
   migrations: ['src/database/migrations/*.ts'],
   migrationsTableName: 'migrations',
 });

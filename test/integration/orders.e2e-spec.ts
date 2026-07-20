@@ -8,6 +8,11 @@ import { DataSource } from 'typeorm';
 import { seedTestData, API_PATHS } from './utils/seed.util';
 import { setupTestApp } from './utils/app.util';
 
+import { IPortfolioRepositoryToken } from '../../src/portfolio/interfaces/portfolio-repository.interface';
+import type { IPortfolioRepository } from '../../src/portfolio/interfaces/portfolio-repository.interface';
+import { PortfolioSnapshot } from '../../src/database/entities/portfolio-snapshot.entity';
+import Big from 'big.js';
+
 describe('OrdersController (e2e)', () => {
   let app: INestApplication<App>;
   let dataSource: DataSource;
@@ -23,6 +28,33 @@ describe('OrdersController (e2e)', () => {
     // Seed test data
     dataSource = app.get(DataSource);
     await seedTestData(dataSource);
+
+    // Mock findLatestMarketData to workaround SQLite lacking DISTINCT ON support
+    const portfolioRepo = app.get<IPortfolioRepository>(
+      IPortfolioRepositoryToken,
+    );
+    jest.spyOn(portfolioRepo, 'findLatestMarketData').mockResolvedValue([
+      {
+        instrumentId: 1,
+        close: new Big(1),
+        previousClose: new Big(1),
+      } as any,
+      {
+        instrumentId: 2,
+        close: new Big(200),
+        previousClose: new Big(190),
+      } as any,
+      {
+        instrumentId: 3,
+        close: new Big(150),
+        previousClose: new Big(145),
+      } as any,
+      {
+        instrumentId: 4,
+        close: new Big(1),
+        previousClose: new Big(1),
+      } as any,
+    ]);
   });
 
   afterAll(async () => {
@@ -143,5 +175,22 @@ describe('OrdersController (e2e)', () => {
         .post(`${API_PATHS.ORDERS}/999999/cancel`)
         .expect(404);
     });
+  });
+
+  it('creates a portfolio snapshot asynchronously after an order is FILLED', async () => {
+    // Wait a brief moment for the OrderFilledEvent listener to finish its background job
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const snapshotRepo = dataSource.getRepository(PortfolioSnapshot);
+    const snapshot = await snapshotRepo.findOne({ where: { userId: 1 } });
+
+    expect(snapshot).toBeDefined();
+    // After seeded CASH IN 10000, seeded BUY AAPL (1500), and test MARKET BUY (2000), cash should be 6500
+    expect(snapshot!.availableCash.toNumber()).toBe(6500);
+    // User should have 20 AAPL shares (instrumentId: 2)
+    expect(snapshot!.positions['2'].shares).toBe(20);
+    // totalCost = 1500 + 2000 = 3500
+    expect(Number(snapshot!.positions['2'].totalCost)).toBe(3500);
+    expect(snapshot!.lastOrderId).toBeGreaterThan(0);
   });
 });

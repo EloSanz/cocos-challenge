@@ -1,7 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import Big from 'big.js';
 import { EntityNotFoundException } from '../../../common/exceptions/domain.exceptions';
-import { projectAccount } from '../../../common/account-projection';
 import { ZERO, roundMoney } from '../../../common/money';
 import { IGetPortfolioUseCase } from '../../interfaces/get-portfolio-usecase.interface';
 import {
@@ -10,27 +9,52 @@ import {
 } from '../../interfaces/portfolio.result';
 import { IPortfolioRepositoryToken } from '../../interfaces/portfolio-repository.interface';
 import type { IPortfolioRepository } from '../../interfaces/portfolio-repository.interface';
+import { ProjectionManager } from '../projection-manager';
 
 @Injectable()
 export class GetPortfolioUseCaseImpl implements IGetPortfolioUseCase {
   constructor(
     @Inject(IPortfolioRepositoryToken)
     private readonly portfolioRepo: IPortfolioRepository,
+    private readonly projectionManager: ProjectionManager,
   ) {}
 
   async execute(userId: number): Promise<PortfolioResult> {
-    // 1. Fetch filled orders and market data from database using Repository
-    const [orders, marketRows] = await Promise.all([
-      this.portfolioRepo.findFilledOrdersByUser(userId),
-      this.portfolioRepo.findLatestMarketData(),
-    ]);
+    // 1. Project state first — the open positions define exactly which
+    // instruments we need market data and metadata for.
+    const { availableCash, positions: heldPositions } =
+      await this.projectionManager.getProjection(userId);
 
-    // If no orders at all, it could mean the user does not exist or has no activity
-    if (orders.length === 0) {
-      throw new EntityNotFoundException('Portfolio for user', userId);
+    const openPositions = [...heldPositions.entries()].filter(
+      ([, pos]) => pos.shares !== 0,
+    );
+
+    // An empty projection (no open positions, zero cash) is ambiguous: it could
+    // be a user who never operated, or one who deposited and later withdrew
+    // everything. Only the former is a 404 — a user who did operate has a
+    // (zeroed) portfolio, not a missing one. Check activity only in this edge,
+    // never on the hot path.
+    if (openPositions.length === 0 && availableCash.eq(ZERO())) {
+      const hasActivity = await this.portfolioRepo.hasFilledOrders(userId);
+      if (!hasActivity) {
+        throw new EntityNotFoundException('Portfolio for user', userId);
+      }
+      return {
+        totalAccountValue: roundMoney(ZERO()),
+        availableCash: roundMoney(ZERO()),
+        positions: [],
+      };
     }
 
-    // 2. Map latest market prices by instrument ID
+    // 2. Fetch prices and ticker/name only for the held instruments, in
+    // parallel. Both queries are bounded by the number of open positions —
+    // not by the user's order history nor the size of the market.
+    const heldIds = openPositions.map(([instId]) => instId);
+    const [marketRows, instruments] = await Promise.all([
+      this.portfolioRepo.findLatestMarketData(heldIds),
+      this.portfolioRepo.findInstrumentsByIds(heldIds),
+    ]);
+
     const marketMap = new Map<number, { close: Big; previousClose: Big }>();
     for (const row of marketRows) {
       marketMap.set(row.instrumentId, {
@@ -39,30 +63,15 @@ export class GetPortfolioUseCaseImpl implements IGetPortfolioUseCase {
       });
     }
 
-    // 3. Derive cash and holdings from the FILLED-order log (shared with the
-    // order funds check, so both views stay consistent).
-    const { availableCash, positions: heldPositions } = projectAccount(orders);
-
-    // Instrument metadata (ticker/name) comes from the loaded relation.
     const metaById = new Map<number, { ticker: string; name: string }>();
-    for (const order of orders) {
-      if (order.instrument && !metaById.has(order.instrumentId)) {
-        metaById.set(order.instrumentId, {
-          ticker: order.instrument.ticker,
-          name: order.instrument.name,
-        });
-      }
+    for (const inst of instruments) {
+      metaById.set(inst.id, { ticker: inst.ticker, name: inst.name });
     }
 
-    // 4. Enrich each open position with current market value and return.
     const positions: PositionResult[] = [];
     let totalAssetValue = ZERO();
 
-    for (const [instId, pos] of heldPositions.entries()) {
-      if (pos.shares === 0) {
-        continue; // Skip closed positions
-      }
-
+    for (const [instId, pos] of openPositions) {
       const mkt = marketMap.get(instId);
       const currentPrice = mkt ? mkt.close : pos.avgPrice;
       const totalValue = new Big(pos.shares).times(currentPrice);
@@ -74,7 +83,6 @@ export class GetPortfolioUseCaseImpl implements IGetPortfolioUseCase {
           .div(pos.totalCost)
           .times(100);
       } else if (pos.shares < 0 && pos.totalCost.lt(0)) {
-        // For short positions, return is positive if price decreased.
         totalReturnPct = pos.avgPrice
           .minus(currentPrice)
           .div(pos.avgPrice)

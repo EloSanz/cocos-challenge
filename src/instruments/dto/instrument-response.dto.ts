@@ -1,15 +1,21 @@
-import { ApiProperty } from '@nestjs/swagger';
-
 export class InstrumentResponseDto {
-  @ApiProperty({ example: 47 })
+  /**
+   * @example 47
+   */
   id: number;
 
-  @ApiProperty({ example: 'PAMP' })
+  /**
+   * @example 'PAMP'
+   */
   ticker: string;
 
-  @ApiProperty({ example: 'Pampa Holding S.A.' })
+  /**
+   * @example 'Pampa Holding S.A.'
+   */
   name: string;
 
-  @ApiProperty({ example: 'ACCIONES' })
+  /**
+   * @example 'ACCIONES'
+   */
   type: string;
 }
