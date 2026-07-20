@@ -30,9 +30,12 @@ export interface AccountProjection {
  *
  * All money is kept in `Big` decimals — never IEEE-754 floats.
  */
-export function projectAccount(filledOrders: Order[]): AccountProjection {
-  let availableCash = ZERO();
-  const positions = new Map<number, ProjectedPosition>();
+export function projectAccount(
+  filledOrders: Order[],
+  initialState?: AccountProjection,
+): AccountProjection {
+  let availableCash = initialState?.availableCash ?? ZERO();
+  const positions = new Map<number, ProjectedPosition>(initialState?.positions);
 
   const positionFor = (instrumentId: number): ProjectedPosition => {
     let pos = positions.get(instrumentId);
