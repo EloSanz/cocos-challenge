@@ -89,15 +89,7 @@ Para ejecutar el proyecto localmente, solo necesitas tener Docker y Node instala
 # 1. Instalar dependencias locales (útil para el autocompletado y tests)
 npm install
 
-### Conectar a Base de Datos en Producción (Neon)
-Para apuntar el contenedor de la API a la base de datos de producción (Neon) en lugar del contenedor local de PostgreSQL, utilizaremos el archivo `.env.production` provisto en el repositorio. Simplemente pasale a Docker Compose dicho archivo de entorno:
-
-```bash
-docker-compose --env-file .env.production up --build
-```
-Al hacerlo, podrás verificar en los logs de inicio de la API que efectivamente está conectada a Neon (`DB_HOST: ep-wild-boat...`).
-
-# 2. Levantar la infraestructura completa (App, BD, Logs) localmente
+# 2. Levantar la infraestructura completa (App, BD local, Logs)
 docker-compose up -d --build
 
 # 3. Correr las migraciones (crea la tabla portfolio_snapshots, requerida para operar)
@@ -114,3 +106,20 @@ npm run test:regression
 ```
 
 CI (`.github/workflows/ci.yml`) reproduce los unit tests y e2e más lint y build en cada push/PR a `main`.
+
+### Conectar a la Base de Datos de Producción (Neon)
+
+Para apuntar la API a Neon en lugar del PostgreSQL local, creá tu `.env.production` a partir del
+template y completá las credenciales (las provee `challenge.md`):
+
+```bash
+cp .env.production.example .env.production
+# Editá .env.production con host/usuario/password de Neon. DB_SSL=true ya viene seteado (Neon lo exige).
+
+docker-compose --env-file .env.production up --build
+```
+
+En los logs de arranque vas a ver `DB_HOST: <tu-endpoint>.neon.tech`, confirmando la conexión a Neon.
+
+> `.env.production` está gitignoreado: nunca se commitea ni entra a la imagen Docker. El único
+> archivo versionado es el template `.env.production.example` (sin secretos).
