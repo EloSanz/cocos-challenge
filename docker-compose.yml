@@ -6,18 +6,15 @@ services:
       - '3000:3000'
     # Production runs on injected env vars (no .env file). These point the app
     # at the bundled `db` service, so `docker-compose up` is self-contained.
-    # Defaults to production posture (AdminGuard disables /admin entirely).
-    # To exercise the admin endpoints locally, override explicitly:
-    #   NODE_ENV=development docker-compose up
+    # Override DB_HOST/DB_SSL (e.g. via --env-file .env.production) to target Neon.
     environment:
       NODE_ENV: ${NODE_ENV:-production}
-      ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY:-supersecret123}
-      DB_HOST: db
-      DB_PORT: 5432
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-5432}
       DB_DATABASE: ${DB_DATABASE:-localdb}
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-password}
-      DB_SSL: 'false'
+      DB_SSL: ${DB_SSL:-false}
       PORT: 3000
       # Plain (non-colorized) logs so Loki/Grafana don't show ANSI escape codes.
       NO_COLOR: '1'
@@ -32,15 +29,15 @@ services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-localdb}
-      POSTGRES_USER: ${DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: localdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
     ports:
       - '5432:5432'
     volumes:
       - ./db.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-localdb}']
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d localdb']
       interval: 5s
       timeout: 3s
       retries: 5

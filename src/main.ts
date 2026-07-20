@@ -37,5 +37,10 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, swaggerDocument);
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
+
+  const logger = app.get(Logger);
+  logger.log(
+    `Application is running on: ${await app.getUrl()} | NODE_ENV: ${process.env.NODE_ENV || 'development'} | DB_HOST: ${process.env.DB_HOST || 'localhost'}`,
+  );
 }
 void bootstrap();
